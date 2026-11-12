@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jigsaw Reading 2 · The Honey Files</title>
+<style>
+:root{
+  --honey:#F2A516; --honey-2:#FFD36B; --honey-soft:#FFF4D6;
+  --plum:#3B1F4A; --plum-2:#5C3470; --plum-soft:#F1E8F6;
+  --ink:#2A1E30; --ink-2:#5B4E62; --line:#E6D9C4; --paper:#FFFCF4;
+  --ok:#1F8A5B; --ok-soft:#E1F5EA; --bad:#C2413B; --bad-soft:#FBE4E2;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:19px;line-height:1.6;color:var(--ink);
+  background:var(--paper);
+  background-image:radial-gradient(circle at 20px 20px,rgba(242,165,22,.10) 2px,transparent 3px);
+  background-size:40px 40px;}
+button{font:inherit;cursor:pointer}
+input,textarea{font:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:18px}
+
+/* header */
+header.top{background:linear-gradient(135deg,var(--plum),var(--plum-2));color:#fff;padding:18px 22px;border-radius:0 0 26px 26px;position:relative;overflow:hidden}
+header.top h1{margin:0;font-size:30px;letter-spacing:.3px}
+header.top h1 span{color:var(--honey-2)}
+header.top p{margin:2px 0 0;opacity:.9;font-size:17px}
+header.top .ar{color:var(--honey-2);display:inline-block;margin-left:8px}
+.hex-bg{position:absolute;right:-20px;top:-10px;opacity:.18;font-size:120px;line-height:1;pointer-events:none}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:4px 12px;border-radius:99px;font-size:16px}
+.chip b{color:var(--honey-2)}
+.steps{display:flex;gap:6px;margin:16px 0 4px;flex-wrap:wrap}
+.step{flex:1;min-width:120px;text-align:center;padding:8px 6px;border-radius:12px;background:#fff;border:2px solid var(--line);font-size:15px;color:var(--ink-2)}
+.step.on{border-color:var(--honey);background:var(--honey-soft);color:var(--ink);font-weight:700}
+.step.done{border-color:var(--ok);color:var(--ok)}
+
+/* cards */
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin:16px 0;box-shadow:0 4px 0 rgba(59,31,74,.06)}
+h2{font-size:26px;margin:0 0 8px;color:var(--plum)}
+h3{margin:0 0 6px;color:var(--plum)}
+.muted{color:var(--ink-2)}
+.ar{font-family:"Segoe UI",Tahoma,Arial,sans-serif;direction:rtl;color:var(--plum-2);font-size:18px}
+.btn{border:none;border-radius:12px;padding:12px 20px;font-weight:700;background:var(--honey);color:var(--ink);box-shadow:0 3px 0 #C47F00;transition:transform .08s}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #C47F00}
+.btn.plum{background:var(--plum);color:#fff;box-shadow:0 3px 0 #1E0E28}
+.btn.ghost{background:#fff;border:2px solid var(--line);box-shadow:none;color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.grow{flex:1}
+label.f{display:block;font-weight:700;margin:10px 0 4px}
+input.t{width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff}
+input.t:focus,textarea:focus{outline:none;border-color:var(--honey)}
+
+/* role cards */
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.role{border:3px solid var(--line);border-radius:18px;padding:18px;background:#fff;text-align:left}
+.role .big{font-size:44px;line-height:1}
+.role h3{font-size:22px;margin:6px 0 2px}
+.role.sel{border-color:var(--honey);background:var(--honey-soft)}
+.role.b.sel{border-color:var(--plum-2);background:var(--plum-soft)}
+@media (max-width:640px){.roles{grid-template-columns:1fr}}
+
+/* reading */
+.tools{position:sticky;top:0;z-index:5;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;box-shadow:0 4px 10px rgba(0,0,0,.05)}
+.tool{border:2px solid var(--line);background:#fff;border-radius:10px;padding:6px 12px;font-size:16px}
+.tool.on{border-color:var(--plum);background:var(--plum-soft);font-weight:700}
+.sw{width:26px;height:26px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line);padding:0}
+.sw.on{box-shadow:0 0 0 3px var(--plum)}
+.sw.y{background:#FFE45C}.sw.g{background:#9BE7A6}.sw.p{background:#FFB3D1}
+.text{background:var(--paper);border:2px solid var(--line);border-radius:var(--radius);padding:22px 26px}
+.text.A{border-left:8px solid var(--honey)}
+.text.B{border-left:8px solid var(--plum-2)}
+.text h3{font-size:24px}
+.text p{margin:0 0 14px;font-size:20px;line-height:1.75}
+.text p .pl{display:inline-block;min-width:30px;font-weight:800;color:var(--plum-2);margin-right:6px}
+.text.hlmode{cursor:text}
+mark.hl{border-radius:4px;padding:0 2px;color:inherit}
+mark.y{background:#FFE45C}mark.g{background:#9BE7A6}mark.p{background:#FFB3D1}
+.text.erase mark.hl{cursor:pointer;outline:2px dashed var(--bad)}
+.gw{border-bottom:2px dotted var(--plum-2);cursor:help;position:relative}
+.tip{position:absolute;left:0;bottom:120%;background:var(--plum);color:#fff;padding:6px 10px;border-radius:10px;font-size:16px;white-space:nowrap;z-index:9;box-shadow:0 6px 14px rgba(0,0,0,.2)}
+.tip .ar{color:var(--honey-2);display:block}
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:10px}
+.gloss div{background:var(--honey-soft);border-radius:10px;padding:8px 12px;font-size:17px}
+.gloss b{color:var(--plum)}
+
+/* talk */
+.facts li{margin:8px 0}
+.check{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:2px solid var(--line);border-radius:12px;margin:8px 0;background:#fff}
+.check input{width:24px;height:24px;margin-top:3px;accent-color:var(--plum)}
+.frame{background:var(--plum-soft);border-radius:12px;padding:10px 14px;margin:6px 0;font-size:18px}
+
+/* questions */
+.q{border:2px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:#fff}
+.q .qh{display:flex;gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.num{background:var(--plum);color:#fff;border-radius:50%;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.type{font-size:14px;background:var(--honey-soft);color:#8A5A00;border-radius:99px;padding:2px 10px;font-weight:700}
+.q .stem{font-weight:600;margin:4px 0 10px}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;text-align:left;width:100%}
+.opt.sel{border-color:var(--plum);background:var(--plum-soft)}
+.opt .lt{font-weight:800;color:var(--plum-2);min-width:22px}
+.tfng{display:flex;gap:8px;flex-wrap:wrap}
+.tfng .opt{width:auto;flex:1;min-width:120px;justify-content:center;font-weight:700}
+.q.right{border-color:var(--ok);background:var(--ok-soft)}
+.q.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.fb{margin-top:10px;font-size:17px}
+.where{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:8px;padding:2px 8px;margin-left:4px}
+.opt.correct{border-color:var(--ok);background:#fff}
+.locked .opt,.locked input{pointer-events:none}
+textarea.team{width:100%;min-height:90px;border:2px solid var(--line);border-radius:12px;padding:12px}
+
+/* results */
+.score{font-size:58px;font-weight:900;color:var(--plum);line-height:1}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.badge{border:2px solid var(--line);border-radius:14px;padding:10px 14px;background:#fff;text-align:center;min-width:140px;opacity:.35}
+.badge.got{opacity:1;border-color:var(--honey);background:var(--honey-soft)}
+.badge .e{font-size:34px;display:block}
+.both{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:760px){.both{grid-template-columns:1fr}}
+.both .text p{font-size:17px}
+
+/* certificate */
+.cert{border:10px double var(--honey);border-radius:20px;padding:30px;text-align:center;background:linear-gradient(#fff,var(--honey-soft));position:relative}
+.cert h2{font-size:34px;margin:6px 0}
+.cert .names{font-size:30px;font-weight:800;color:var(--plum);margin:10px 0}
+.cert .sig{margin-top:18px;font-size:16px;color:var(--ink-2)}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--plum);color:#fff;padding:12px 20px;border-radius:14px;font-weight:600;z-index:100;transition:transform .3s;max-width:92vw;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:90}
+footer{text-align:center;color:var(--ink-2);font-size:15px;padding:24px 0 34px}
+.hidden{display:none!important}
+.bee{display:inline-block;animation:buzz 1.6s ease-in-out infinite}
+@keyframes buzz{0%,100%{transform:translate(0,0) rotate(-6deg)}50%{transform:translate(6px,-5px) rotate(6deg)}}
+
+@media print{
+  body{background:#fff;font-size:14px}
+  header.top,.steps,.tools,.noprint,footer,#toast,canvas{display:none!important}
+  .card{box-shadow:none;border:none;padding:0}
+  .printme{display:block!important}
+  .q{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="hex-bg">⬡</div>
+  <div class="wrap" style="padding:0">
+    <h1><span class="bee">🐝</span> Jigsaw Reading 2 · <span>The Honey Files</span></h1>
+    <p>Two readers. Two texts. One team. <span class="ar">قارئتان، نصّان، فريق واحد</span></p>
+    <div class="bar">
+      <span class="chip">Team: <b id="hdrNames">—</b></span>
+      <span class="chip">You are: <b id="hdrRole">—</b></span>
+      <span class="chip">Points: <b id="hdrPts">0</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="steps noprint" id="steps"></div>
+
+  <!-- 1 START -->
+  <section id="s-start" class="card">
+    <h2>Welcome, team! 🍯</h2>
+    <p>You and your partner will read <b>different</b> texts about honey. Then you will answer <b>one</b> set of questions together. Half of the answers are in your text and half are in your partner's text, so you need each other!</p>
+    <p class="ar">ستقرأ كل واحدة منكما نصاً مختلفاً عن العسل، ثم تجيبان معاً على الأسئلة نفسها. نصف الإجابات في نصّك والنصف الآخر في نص زميلتك!</p>
+    <div class="row">
+      <div class="grow"><label class="f" for="n1">Your name</label><input id="n1" class="t" placeholder="e.g. Mariam"></div>
+      <div class="grow"><label class="f" for="n2">Your partner's name</label><input id="n2" class="t" placeholder="e.g. Shamma"></div>
+    </div>
+    <label class="f">Which text will you read? <span class="ar">أي نص ستقرئين؟</span></label>
+    <div class="roles">
+      <button class="role a" data-role="A"><span class="big">🐝</span><h3>Reader A</h3><div>The Busy Life of a Honeybee</div><div class="ar">الحياة المزدحمة لنحلة العسل</div></button>
+      <button class="role b" data-role="B"><span class="big">🏺</span><h3>Reader B</h3><div>The Food That Never Goes Bad</div><div class="ar">الطعام الذي لا يفسد أبداً</div></button>
+    </div>
+    <p class="muted" style="font-size:16px;margin-top:12px">Each partner opens the app on her own device. One chooses A, the other chooses B. Don't look at your partner's screen! 🙈</p>
+    <div class="row" style="margin-top:12px">
+      <button class="btn plum" id="goRead">Start reading →</button>
+      <label class="btn ghost" style="font-weight:600">📂 Load saved work<input type="file" id="loadFile" accept=".json" hidden></label>
+    </div>
+  </section>
+
+  <!-- 2 READ -->
+  <section id="s-read" class="hidden">
+    <div class="card">
+      <h2>Step 1 · Read and highlight</h2>
+      <p>Read your text carefully. Turn on the <b>highlighter</b> and select the most important facts. You will need to explain them to your partner. Tap a dotted word to see its Arabic meaning.</p>
+      <p class="ar">اقرئي النص بعناية واستخدمي قلم التظليل لتحديد أهم المعلومات. اضغطي على الكلمة المنقطة لمعرفة معناها بالعربية.</p>
+    </div>
+    <div class="tools noprint">
+      <button class="tool" id="hlBtn">🖍️ Highlighter: OFF</button>
+      <button class="sw y on" data-c="y" title="Yellow"></button>
+      <button class="sw g" data-c="g" title="Green"></button>
+      <button class="sw p" data-c="p" title="Pink"></button>
+      <button class="tool" id="eraseBtn">🧽 Eraser</button>
+      <button class="tool" id="clearBtn">Clear all</button>
+      <span class="muted" style="font-size:15px">Highlights: <b id="hlCount">0</b></span>
+    </div>
+    <div id="myText"></div>
+    <div class="card">
+      <h3>Key words <span class="ar">الكلمات المهمة</span></h3>
+      <div class="gloss" id="myGloss"></div>
+    </div>
+    <div class="row noprint"><button class="btn plum" id="goTalk">I'm ready to talk →</button></div>
+  </section>
+
+  <!-- 3 TALK -->
+  <section id="s-talk" class="hidden">
+    <div class="card">
+      <h2>Step 2 · Tell your partner 🗣️</h2>
+      <p>Take turns. Reader A speaks first, then Reader B. Use your highlights, but <b>don't read the text aloud</b>. Explain in your own words.</p>
+      <p class="ar">تبادلا الأدوار. لا تقرئي النص بصوت عالٍ، بل اشرحي بكلماتك الخاصة.</p>
+      <h3 style="margin-top:14px">Useful sentences</h3>
+      <div class="frame">"My text is about …"</div>
+      <div class="frame">"The most surprising fact is that …"</div>
+      <div class="frame">"Did you know that …?"</div>
+      <div class="frame">"Can you say that again, please?" / "What does … mean?"</div>
+      <h3 style="margin-top:16px">Tick when you have done it</h3>
+      <label class="check"><input type="checkbox" class="tk"> <span>I told my partner <b>3 facts</b> from my text.</span></label>
+      <label class="check"><input type="checkbox" class="tk"> <span>I listened to <b>3 facts</b> from my partner's text.</span></label>
+      <label class="check"><input type="checkbox" class="tk"> <span>We found one fact that <b>surprised us both</b>. 😮</span></label>
+    </div>
+    <div class="row noprint">
+      <button class="btn ghost" id="backRead">← Back to my text</button>
+      <button class="btn plum" id="goQs">Answer the questions together →</button>
+    </div>
+  </section>
+
+  <!-- 4 QUESTIONS -->
+  <section id="s-qs" class="hidden">
+    <div class="card">
+      <h2>Step 3 · Team questions 🤝</h2>
+      <p>Answer <b>all 14 questions</b> together. Some answers are in your text and some are in your partner's text. <b>Ask your partner</b> when the answer is not in your text. Then check your answers together.</p>
+      <p class="ar">أجيبا عن الأسئلة معاً. إذا لم تجدي الإجابة في نصّك، اسألي زميلتك!</p>
+      <p class="muted" style="font-size:16px">You can still look at your own text. <button class="tool noprint" id="peek">📖 Show my text</button></p>
+      <div id="peekBox" class="hidden"></div>
+    </div>
+    <div id="qList"></div>
+    <div class="q">
+      <div class="qh"><span class="num">★</span><span class="type">Team challenge · not marked</span></div>
+      <div class="stem">Write <b>one sentence</b> together that uses a fact from <b>Text A</b> and a fact from <b>Text B</b>.</div>
+      <div class="muted" style="font-size:16px">Example start: "Bees work very hard to make honey, and …"</div>
+      <textarea class="team" id="teamSent" placeholder="Write your team sentence here…"></textarea>
+    </div>
+    <div class="row noprint">
+      <button class="btn ghost" id="saveBtn">💾 Save our work</button>
+      <button class="btn plum" id="checkBtn">✔ Check our answers</button>
+    </div>
+  </section>
+
+  <!-- 5 RESULTS -->
+  <section id="s-res" class="hidden">
+    <div class="card">
+      <div class="row">
+        <div><div class="score" id="scoreBig">0/14</div><div class="muted" id="scorePct"></div></div>
+        <div class="grow"><h2 id="resTitle">Well done!</h2><p id="resMsg"></p></div>
+      </div>
+      <div class="badges" id="badges"></div>
+    </div>
+    <div class="card">
+      <h2>Now read both texts 👀</h2>
+      <p>Read your partner's text. Find the answers you got wrong. Was the problem in the reading or in the explaining?</p>
+      <div class="both" id="bothTexts"></div>
+    </div>
+    <div class="card" id="certWrap">
+      <div class="cert" id="cert"></div>
+    </div>
+    <div class="row noprint">
+      <button class="btn ghost" id="reviewBtn">← Review the questions</button>
+      <button class="btn ghost" id="saveBtn2">💾 Save our work</button>
+      <button class="btn plum" id="printBtn">🖨️ Print / Save as PDF</button>
+      <button class="btn ghost" id="restartBtn">↺ Start again</button>
+    </div>
+  </section>
+</div>
+
+<footer>Designed by: Nazila Motahari</footer>
+<div id="toast"></div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* ================= CONTENT ================= */
+const TEXTS = {
+  A:{
+    title:"The Busy Life of a Honeybee", ar:"الحياة المزدحمة لنحلة العسل", icon:"🐝",
+    paras:[
+      "A honeybee is very small, but it is one of the hardest-working animals on Earth. In summer, a {worker|عاملة} bee usually lives for only about six weeks. During that short life, she makes just one-twelfth of a {teaspoon|ملعقة صغيرة} of honey. This means that every jar of honey in your kitchen is the work of hundreds of bees.",
+      "To make 450 grams of honey (about one small jar), bees must visit around two million flowers. Together, they fly a total {distance|مسافة} of nearly 90,000 kilometres. That is more than twice around the world! A bee's wings {beat|تخفق / ترفرف} more than 200 times every second, and this fast movement makes the famous buzzing sound.",
+      "Bees also have a surprising way to {share|تتشارك} information. When a bee finds a good field of flowers, she flies back to the {hive|خلية النحل} and does a \"waggle dance\". She moves in a figure-of-eight {pattern|نمط / شكل} and shakes her body. The {direction|اتجاه} of the dance tells the other bees which way to fly, and the length of the dance tells them how far away the flowers are. A scientist called Karl von Frisch studied this dance and won a Nobel Prize in 1973.",
+      "Bees see the world differently from us, too. They have five eyes: two large ones on the sides of the head and three small ones on top. They cannot see the colour red, but they can see {ultraviolet|فوق البنفسجية} light. This helps them find the centre of a flower, where the sweet nectar is."
+    ]
+  },
+  B:{
+    title:"The Food That Never Goes Bad", ar:"الطعام الذي لا يفسد أبداً", icon:"🏺",
+    paras:[
+      "Most food in your fridge goes bad after a few days or weeks. Honey is different. If it is kept in a closed jar, honey can stay safe to eat for a very long time. {Archaeologists|علماء الآثار} working in ancient Egyptian {tombs|مقابر} have reported finding pots of honey that were about 3,000 years old, and the honey was still good to eat.",
+      "Why does honey last so long? There are three main reasons. First, honey contains very little water, so {bacteria|البكتيريا} cannot grow in it. Second, it is quite {acidic|حمضي}, and this also stops {germs|الجراثيم}. Third, bees add a special {substance|مادة} to the nectar. This makes a tiny amount of hydrogen peroxide, a chemical that kills bacteria.",
+      "Sometimes people throw honey away because it becomes hard and cloudy. In fact, this change is called {crystallisation|التبلّر}, and it is completely natural. The honey is still safe. To make it soft again, simply put the jar in a bowl of warm water for a few minutes.",
+      "In the UAE, honey has a special place in the culture. One of the most famous types is Sidr honey, which bees make from the flowers of the Sidr tree. It is dark and rich, and it is often expensive. Each year, {beekeepers|النحّالون} and visitors meet at the Hatta Honey Festival to buy, sell and taste local honey. In many families, a spoon of honey is a traditional {remedy|علاج} for a {sore throat|التهاب الحلق}."
+    ]
+  }
+};
+
+/* Fixed mixed order so both partners see the same numbers */
+const QS = [
+  {t:"tfng", src:"A", p:1, s:"In summer, a worker bee usually lives for about a year.", a:"False", why:"She lives for only about six weeks."},
+  {t:"mcq",  src:"B", p:1, s:"How old was the honey found in the Egyptian tombs?", o:["About 300 years old","About 3,000 years old","About 30,000 years old","About 1,300 years old"], a:1},
+  {t:"gap",  src:"A", p:4, s:"Bees cannot see the colour ________ .", a:["red"], hint:"ONE WORD"},
+  {t:"tfng", src:"B", p:3, s:"Honey that becomes hard and cloudy is dangerous to eat.", a:"False", why:"Crystallisation is natural and the honey is still safe."},
+  {t:"mcq",  src:"A", p:3, s:"What does the LENGTH of the waggle dance tell the other bees?", o:["Which way they should fly","How far away the flowers are","How many flowers are there","What colour the flowers are"], a:1},
+  {t:"gap",  src:"B", p:4, s:"Bees make Sidr honey from the flowers of the Sidr ________ .", a:["tree"], hint:"ONE WORD"},
+  {t:"tfng", src:"A", p:3, s:"Karl von Frisch won a Nobel Prize for studying the bee dance.", a:"True", why:"He studied the dance and won a Nobel Prize in 1973."},
+  {t:"mcq",  src:"B", p:2, s:"Bacteria cannot grow in honey because honey has …", o:["a very cold temperature","very little water in it","no smell or colour","a thick layer of wax"], a:1},
+  {t:"tfng", src:"A", p:null, s:"Bees prefer purple flowers to yellow flowers.", a:"Not Given", why:"The text does not compare flower colours."},
+  {t:"gap",  src:"A", p:2, s:"To make 450 grams of honey, bees visit about ________ million flowers.", a:["two","2"], hint:"ONE WORD OR A NUMBER"},
+  {t:"tfng", src:"B", p:4, s:"Sidr honey is usually cheap.", a:"False", why:"It is often expensive."},
+  {t:"mcq",  src:"B", p:3, s:"What should you do if your honey becomes hard?", o:["Throw the whole jar away","Keep it in the freezer overnight","Put the jar in warm water","Mix in some cold water"], a:2},
+  {t:"mcq",  src:"A", p:4, s:"How many eyes does a honeybee have?", o:["Two","Three","Five","Six"], a:2},
+  {t:"tfng", src:"B", p:4, s:"Some families in the UAE use honey to help a sore throat.", a:"True", why:"Honey is a traditional remedy for a sore throat."}
+];
+
+/* ================= STATE ================= */
+const S = {n1:"",n2:"",role:null,step:"start",hl:0,ticks:[false,false,false],ans:{},team:"",checked:false,textHTML:null,points:0};
+const STEPS=[["start","Team"],["read","Read"],["talk","Talk"],["qs","Questions"],["res","Results"]];
+const $=id=>document.getElementById(id);
+
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2600)}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+function renderText(key,withGloss=true){
+  const T=TEXTS[key];
+  const ps=T.paras.map((p,i)=>{
+    const html=esc(p).replace(/\{([^|]+)\|([^}]+)\}/g,(m,w,a)=>withGloss?`<span class="gw" data-ar="${a}">${w}</span>`:w);
+    return `<p><span class="pl">${i+1}</span>${html}</p>`;
+  }).join("");
+  return `<div class="text ${key}" id="text${key}"><h3>${T.icon} Text ${key}: ${T.title}</h3><div class="ar" style="margin:-4px 0 12px">${T.ar}</div>${ps}</div>`;
+}
+function glossFor(key){
+  const out=[];TEXTS[key].paras.forEach(p=>p.replace(/\{([^|]+)\|([^}]+)\}/g,(m,w,a)=>out.push(`<div><b>${w}</b> <span class="ar">${a}</span></div>`)));
+  return out.join("");
+}
+
+/* ================= NAV ================= */
+function go(step){
+  S.step=step;
+  ["start","read","talk","qs","res"].forEach(s=>$("s-"+s).classList.toggle("hidden",s!==step));
+  const idx=STEPS.findIndex(x=>x[0]===step);
+  $("steps").innerHTML=STEPS.map((x,i)=>`<div class="step ${i===idx?"on":i<idx?"done":""}">${i<idx?"✓ ":""}${i+1}. ${x[1]}</div>`).join("");
+  window.scrollTo({top:0,behavior:"smooth"});
+  updHdr();
+}
+function updHdr(){
+  $("hdrNames").textContent=(S.n1&&S.n2)?`${S.n1} & ${S.n2}`:"—";
+  $("hdrRole").textContent=S.role?`Reader ${S.role}`:"—";
+  $("hdrPts").textContent=S.points;
+}
+function addPts(n,msg){S.points+=n;updHdr();if(msg)toast(msg)}
+
+/* ================= START ================= */
+document.querySelectorAll(".role").forEach(b=>b.onclick=()=>{
+  S.role=b.dataset.role;document.querySelectorAll(".role").forEach(x=>x.classList.toggle("sel",x===b));
+});
+$("goRead").onclick=()=>{
+  S.n1=$("n1").value.trim();S.n2=$("n2").value.trim();
+  if(!S.n1||!S.n2) return toast("Please write both names ✍️");
+  if(!S.role) return toast("Choose Reader A or Reader B 🐝");
+  setupRead();go("read");
+};
+
+/* ================= READ + HIGHLIGHTER ================= */
+let hlOn=false,erase=false,hlColor="y";
+function setupRead(){
+  $("myText").innerHTML=S.textHTML||renderText(S.role);
+  $("myGloss").innerHTML=glossFor(S.role);
+  bindText();countHL();
+}
+function textEl(){return $("text"+S.role)}
+function bindText(){
+  const el=textEl();
+  el.addEventListener("mouseup",()=>setTimeout(doHL,0));
+  el.addEventListener("touchend",()=>setTimeout(doHL,250));
+  el.addEventListener("click",e=>{
+    const m=e.target.closest("mark.hl");
+    if(erase&&m){unwrap(m);countHL();return}
+    const g=e.target.closest(".gw");
+    if(g&&!hlOn&&!erase){showTip(g)}
+  });
+}
+function showTip(g){
+  document.querySelectorAll(".tip").forEach(t=>t.remove());
+  const t=document.createElement("span");t.className="tip";
+  t.innerHTML=`${esc(g.textContent)}<span class="ar">${esc(g.dataset.ar)}</span>`;
+  g.appendChild(t);setTimeout(()=>t.remove(),2600);
+}
+function doHL(){
+  if(!hlOn) return;
+  const sel=getSelection();if(!sel.rangeCount||sel.isCollapsed) return;
+  const r=sel.getRangeAt(0),el=textEl();
+  if(!el.contains(r.commonAncestorContainer)) return;
+  const pOf=n=>(n.nodeType===3?n.parentNode:n).closest("p");
+  const p1=pOf(r.startContainer),p2=pOf(r.endContainer);
+  if(!p1||p1!==p2){sel.removeAllRanges();return toast("Highlight inside one paragraph at a time 🖍️")}
+  if(!r.toString().trim()){sel.removeAllRanges();return}
+  const m=document.createElement("mark");m.className="hl "+hlColor;
+  m.appendChild(r.extractContents());r.insertNode(m);
+  m.querySelectorAll(".tip").forEach(t=>t.remove());
+  sel.removeAllRanges();countHL();
+  if(S.hl===5) addPts(10,"🖍️ +10 points: Super Highlighter!");
+}
+function unwrap(m){const p=m.parentNode;while(m.firstChild)p.insertBefore(m.firstChild,m);p.removeChild(m);p.normalize()}
+function countHL(){S.hl=textEl()?textEl().querySelectorAll("mark.hl").length:0;$("hlCount").textContent=S.hl;S.textHTML=textEl()?textEl().outerHTML:null}
+$("hlBtn").onclick=()=>{hlOn=!hlOn;if(hlOn)erase=false;syncTools()};
+$("eraseBtn").onclick=()=>{erase=!erase;if(erase)hlOn=false;syncTools()};
+$("clearBtn").onclick=()=>{textEl().querySelectorAll("mark.hl").forEach(unwrap);countHL();toast("All highlights cleared")};
+document.querySelectorAll(".sw").forEach(b=>b.onclick=()=>{hlColor=b.dataset.c;document.querySelectorAll(".sw").forEach(x=>x.classList.toggle("on",x===b));hlOn=true;erase=false;syncTools()});
+function syncTools(){
+  $("hlBtn").classList.toggle("on",hlOn);$("hlBtn").textContent="🖍️ Highlighter: "+(hlOn?"ON":"OFF");
+  $("eraseBtn").classList.toggle("on",erase);
+  const el=textEl();if(el){el.classList.toggle("hlmode",hlOn);el.classList.toggle("erase",erase)}
+}
+$("goTalk").onclick=()=>{
+  countHL();
+  if(S.hl<3) return toast("Highlight at least 3 important facts first 🖍️");
+  go("talk");
+};
+
+/* ================= TALK ================= */
+document.querySelectorAll(".tk").forEach((c,i)=>c.onchange=()=>{S.ticks[i]=c.checked});
+$("backRead").onclick=()=>go("read");
+$("goQs").onclick=()=>{
+  if(!S.ticks.every(Boolean)) return toast("Tick all three boxes after you talk 🗣️");
+  if(!S._talkPts){S._talkPts=1;addPts(15,"🗣️ +15 points: Team Talkers!")}
+  renderQs();go("qs");
+};
+$("peek").onclick=()=>{
+  const b=$("peekBox");const show=b.classList.contains("hidden");
+  b.innerHTML=show?S.textHTML.replace(/id="text[AB]"/,""):"";b.classList.toggle("hidden",!show);
+  $("peek").textContent=show?"🙈 Hide my text":"📖 Show my text";
+};
+
+/* ================= QUESTIONS ================= */
+const TYPE={tfng:"True / False / Not Given",mcq:"Multiple choice",gap:"Sentence completion"};
+function renderQs(){
+  const L="ABCD";
+  $("qList").innerHTML=QS.map((q,i)=>{
+    let body="";
+    if(q.t==="tfng") body=`<div class="tfng">${["True","False","Not Given"].map(v=>`<button class="opt" data-q="${i}" data-v="${v}">${v}</button>`).join("")}</div>`;
+    if(q.t==="mcq")  body=`<div class="opts">${q.o.map((o,j)=>`<button class="opt" data-q="${i}" data-v="${j}"><span class="lt">${L[j]}</span>${esc(o)}</button>`).join("")}</div>`;
+    if(q.t==="gap")  body=`<input class="t gapin" data-q="${i}" placeholder="Write your answer (${q.hint})" autocomplete="off">`;
+    return `<div class="q" id="q${i}"><div class="qh"><span class="num">${i+1}</span><span class="type">${TYPE[q.t]}</span></div><div class="stem">${esc(q.s)}</div>${body}<div class="fb"></div></div>`;
+  }).join("");
+  document.querySelectorAll("#qList .opt").forEach(b=>b.onclick=()=>{
+    if(S.checked) return;
+    const i=+b.dataset.q;S.ans[i]=b.dataset.v;
+    b.parentNode.querySelectorAll(".opt").forEach(x=>x.classList.toggle("sel",x===b));
+  });
+  document.querySelectorAll(".gapin").forEach(inp=>inp.oninput=()=>{S.ans[+inp.dataset.q]=inp.value});
+  $("teamSent").value=S.team;$("teamSent").oninput=e=>S.team=e.target.value;
+  restoreAns();
+  if(S.checked) markAll();
+}
+function restoreAns(){
+  Object.entries(S.ans).forEach(([i,v])=>{
+    const q=QS[i];
+    if(q.t==="gap"){const inp=document.querySelector(`.gapin[data-q="${i}"]`);if(inp)inp.value=v}
+    else{const b=document.querySelector(`.opt[data-q="${i}"][data-v="${v}"]`);if(b)b.classList.add("sel")}
+  });
+}
+function isRight(i){
+  const q=QS[i],v=S.ans[i];if(v==null||v==="") return false;
+  if(q.t==="tfng") return v===q.a;
+  if(q.t==="mcq") return +v===q.a;
+  const n=String(v).trim().toLowerCase().replace(/[.!]/g,"").replace(/\s+million$/,"").replace(/^the\s+/,"");
+  return q.a.includes(n);
+}
+function markAll(){
+  let sc=0;
+  QS.forEach((q,i)=>{
+    const ok=isRight(i);if(ok)sc++;
+    const card=$("q"+i);card.classList.add("locked");card.classList.toggle("right",ok);card.classList.toggle("wrong",!ok);
+    let corr=q.t==="tfng"?q.a:q.t==="mcq"?`${"ABCD"[q.a]}. ${q.o[q.a]}`:q.a[0];
+    if(q.t==="mcq") card.querySelectorAll(".opt")[q.a].classList.add("correct");
+    if(q.t==="tfng") card.querySelector(`.opt[data-v="${q.a}"]`).classList.add("correct");
+    const where=q.p?`📍 Text ${q.src}, paragraph ${q.p}`:`📍 Text ${q.src}: not in the text`;
+    card.querySelector(".fb").innerHTML=(ok?"✅ <b>Correct!</b> ":`❌ <b>Answer:</b> ${esc(corr)}. `)+(q.why?esc(q.why)+" ":"")+`<span class="where">${where}</span>`;
+  });
+  return sc;
+}
+$("checkBtn").onclick=()=>{
+  const missing=QS.map((q,i)=>(S.ans[i]==null||String(S.ans[i]).trim()==="")?i+1:null).filter(Boolean);
+  if(missing.length) return toast(`Answer every question first. Missing: ${missing.join(", ")}`);
+  if(!S.team.trim()) return toast("Write your team sentence ★ before checking");
+  S.checked=true;const sc=markAll();
+  if(!S._qPts){S._qPts=1;S.points+=sc*10+(S.team.trim().split(/\s+/).length>=12?10:0)}
+  showResults(sc);
+};
+
+/* ================= RESULTS ================= */
+function showResults(sc){
+  const pct=Math.round(sc/QS.length*100);
+  $("scoreBig").textContent=`${sc}/${QS.length}`;$("scorePct").textContent=`${pct}% · ${S.points} points`;
+  const pass=pct>=80;
+  $("resTitle").textContent=pass?"Honey Experts! 🍯":"Good teamwork! 🐝";
+  $("resMsg").innerHTML=pass?"Great reading and great explaining. Your team certificate is below.":"You need <b>80%</b> for the team certificate. Read both texts below, find your mistakes, then press <b>Start again</b> to try once more.";
+  const aRight=QS.filter((q,i)=>q.src==="A"&&isRight(i)).length,aTot=QS.filter(q=>q.src==="A").length;
+  const bRight=QS.filter((q,i)=>q.src==="B"&&isRight(i)).length,bTot=QS.filter(q=>q.src==="B").length;
+  const B=[
+    ["🖍️","Super Highlighter",S.hl>=5],
+    ["🗣️","Team Talkers",S.ticks.every(Boolean)],
+    ["🐝","Bee Brain",aRight===aTot],
+    ["🏺","Honey Historian",bRight===bTot],
+    ["🍯","Honey Experts",pass]
+  ];
+  $("badges").innerHTML=B.map(b=>`<div class="badge ${b[2]?"got":""}"><span class="e">${b[0]}</span>${b[1]}</div>`).join("")+
+    `<div class="badge got" style="opacity:1"><span class="e">📊</span>Text A: ${aRight}/${aTot}<br>Text B: ${bRight}/${bTot}</div>`;
+  $("bothTexts").innerHTML=renderText("A",false)+renderText("B",false);
+  const d=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  $("certWrap").classList.toggle("hidden",!pass);
+  $("cert").innerHTML=`<div style="font-size:46px">🐝🍯🐝</div><div class="muted">Team Certificate</div><h2>Honey Experts</h2>
+    <div>This certifies that the reading team</div><div class="names">${esc(S.n1)} &amp; ${esc(S.n2)}</div>
+    <div>worked together to complete <b>Jigsaw Reading 2: The Honey Files</b><br>with a score of <b>${sc}/${QS.length} (${pct}%)</b> and <b>${S.points} points</b>.</div>
+    <div style="margin-top:12px;font-style:italic">“${esc(S.team.trim())}”</div>
+    <div class="sig">${d}<br>Designed by: Nazila Motahari</div>`;
+  go("res");
+  if(pass) confetti();
+}
+$("reviewBtn").onclick=()=>{renderQs();go("qs")};
+$("printBtn").onclick=()=>window.print();
+$("restartBtn").onclick=()=>{
+  const keep={n1:S.n1,n2:S.n2,role:S.role};
+  Object.assign(S,{hl:0,ticks:[false,false,false],ans:{},team:"",checked:false,textHTML:null,points:0,_talkPts:0,_qPts:0},keep);
+  document.querySelectorAll(".tk").forEach(c=>c.checked=false);
+  setupRead();go("read");toast("New try! Read your text again 🐝");
+};
+
+/* ================= SAVE / LOAD ================= */
+function save(){
+  if(textEl()) countHL();
+  const data=JSON.stringify({app:"jigsaw-honey",v:1,...S},null,1);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));
+  a.download=`Honey-Jigsaw_${(S.n1||"team").replace(/\W+/g,"")}-${(S.n2||"").replace(/\W+/g,"")}.json`;
+  document.body.appendChild(a);a.click();a.remove();toast("💾 Saved! Keep the file to continue later.");
+}
+$("saveBtn").onclick=save;$("saveBtn2").onclick=save;
+$("loadFile").onchange=e=>{
+  const f=e.target.files[0];if(!f) return;
+  const r=new FileReader();r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);if(d.app!=="jigsaw-honey") throw 0;
+      Object.assign(S,d);$("n1").value=S.n1;$("n2").value=S.n2;
+      document.querySelectorAll(".role").forEach(x=>x.classList.toggle("sel",x.dataset.role===S.role));
+      document.querySelectorAll(".tk").forEach((c,i)=>c.checked=!!S.ticks[i]);
+      setupRead();
+      if(S.checked){renderQs();showResults(markAll())}
+      else if(S.step==="qs"){renderQs();go("qs")}
+      else go(S.step==="start"?"read":S.step);
+      toast("📂 Welcome back, "+S.n1+"!");
+    }catch(err){toast("Sorry, that file is not a Honey Jigsaw save.")}
+  };r.readAsText(f);e.target.value="";
+};
+
+/* ================= CONFETTI ================= */
+function confetti(){
+  const c=$("confetti"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+  const cols=["#F2A516","#FFD36B","#5C3470","#3B1F4A","#9BE7A6","#FFB3D1"];
+  const P=Array.from({length:170},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,r:4+Math.random()*6,c:cols[Math.random()*cols.length|0],vy:2+Math.random()*3,vx:-1.5+Math.random()*3,a:Math.random()*6}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);
+    P.forEach(p=>{p.y+=p.vy;p.x+=p.vx;p.a+=.1;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6);x.restore()});
+    if(++f<240)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height)})();
+}
+
+go("start");
+</script>
+</body>
+</html>
